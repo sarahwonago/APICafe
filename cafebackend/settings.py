@@ -46,6 +46,8 @@ INSTALLED_APPS = [
 
     #  custom apps
     "account.apps.AccountConfig",
+    "cafecustomer.apps.CafecustomerConfig",
+    "cafeadmin.apps.CafeadminConfig",
 ]
 
 MIDDLEWARE = [
