@@ -34,7 +34,19 @@ class Category(models.Model):
 
 class FoodItem(models.Model):
     """
-    Defines food items.
+    Model representing a fooditem.
+
+    Attributes:
+        id (UUIDField): The unique identifier for the fooditem.
+        category (ForeignKey): The category in which the fooditem belongs to.
+        name (CharField): The name of the fooditem.
+        price (DecimalField): The price of the fooditem.
+        #image = models.ImageField(upload_to="food_images/", default="food_images/default.jpg")
+        description (TextField): Brief description for the fooditem.
+        created_at (DateTimeField): Timestamp when the fooditem was created.
+        updated_at (DateTimeField): Timestamp when the fooditem was updated.
+        is_available (BooleanField): Availability of the fooditem.
+
     """
 
     class Meta:

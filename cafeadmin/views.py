@@ -6,9 +6,11 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import IsAdmin
 from cafecustomer.serializers import (
     CategorySerializer,
+    FoodItemSerializer
 )
 from cafecustomer.models import (
     Category,
+    FoodItem,
 )
 
 
@@ -115,3 +117,79 @@ def delete_category(request, pk):
     category.delete()
 
     return Response({"detail":"Category deleted successfully."},status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def fooditem_create(request):
+    """
+    Creates a new fooditem.
+
+    Only accessible to admin users.
+
+    Args:
+        request(Request): The HTTP request containing the fooditem data.
+
+    Returns:
+        Response: A JSON response containing the newly created fooditem or errors.
+    """
+
+    serializer = FoodItemSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_fooditems(request):
+    """
+    Fetches all fooditems under a category.
+
+    Only accessible to admin users.
+
+    Returns:
+        Response: A JSON response containing all the fooditems under a category or errors.  
+    """
+    fooditems = FoodItem.objects.all()
+    serializer = FoodItemSerializer(fooditems, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def fooditem_detail(request, pk):
+    """
+    Retrieves, update or delete an existing fooditem.
+
+    Only accessible to admin users.
+
+    Args:
+        pk (UUID): The UUID of the fooditem to retrieve, update or delete.
+
+    Returns:
+        Response: A JSON response confirming the deletion, updation, fetchingor errors.
+    """
+
+    try:
+        fooditem = FoodItem.objects.get(pk=pk)
+
+    except FoodItem.DoesNotExist:
+        return Response({"detail": "Fooditem not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'GET':
+        serializer = FoodItem(fooditem)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    elif request.method == 'PUT':
+        serializer = FoodItem(fooditem, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        fooditem.delete()
+        return Response({"detail": "Food item deleted successfully."}, status=status.HTTP_204_NO_CONTENT)

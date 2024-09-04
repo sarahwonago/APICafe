@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category
+from .models import Category, FoodItem
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -19,3 +19,33 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = '__all__'
         
+
+class FoodItemSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the FoodItem model.
+
+    Converts the FoodItem model instances to JSON and vice versa.
+
+    Fields:
+        id (UUIDField): The unique identifier for the fooditem.
+        category (ForeignKey): The category in which the fooditem belongs to.
+        name (CharField): The name of the fooditem.
+        price (DecimalField): The price of the fooditem.
+        #image = models.ImageField(upload_to="food_images/", default="food_images/default.jpg")
+        description (TextField): Brief description for the fooditem.
+        created_at (DateTimeField): Timestamp when the fooditem was created.
+        updated_at (DateTimeField): Timestamp when the fooditem was updated.
+        is_available (BooleanField): Availability of the fooditem.
+    """
+
+    category = serializers.SlugRelatedField(
+        queryset = Category.objects.all(),
+        slug_field = "name"
+    )
+
+    class Meta:
+        model = FoodItem
+        fields = [
+            "id", "category","name", "description", "price", "is_available", "created_at", "updated_at"
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
