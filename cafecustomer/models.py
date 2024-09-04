@@ -9,7 +9,14 @@ User = get_user_model()
 
 class Category(models.Model):
     """
-    Defines categories for food items.
+    Model representing a category for food items.
+
+    Attributes:
+        id (UUIDField): The unique identifier for the category.
+        name (CharField): The name of the category.
+        description (TextField): A brief description of the category.
+        created_at (DateTimeField): The timestamp when the category was created.
+        updated_at (DateTimeField): The timestamp when the category was last updated.
     """
 
     class Meta:
