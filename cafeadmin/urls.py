@@ -1,10 +1,10 @@
 from django.urls import path
-from .views import (admin_home, add_category, update_category, get_categories,delete_category,
+from .views import (AdminHome, add_category, update_category, get_categories,delete_category,
                     fooditem_create, get_fooditems, fooditem_detail
                     )
 
 urlpatterns = [
-    path("dashboard/", admin_home, name="admin-home"),
+    path("dashboard/", AdminHome.as_view(), name="admin-home"),
     path("categories/create/", add_category, name="create_category"),
     path("categories/", get_categories, name="get_categories"),
     path("categories/update/<uuid:pk>/", update_category, name="update_category"),

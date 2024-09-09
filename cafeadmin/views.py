@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from .permissions import IsAdmin
@@ -14,10 +15,33 @@ from cafecustomer.models import (
 )
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdmin])
-def admin_home(request):
-    return Response({"detail":"Welcome to the admin dashboard"})
+class AdminHome(APIView):
+    """
+    View for the admin dashboard.
+    
+    Only accessible to the admin.
+
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        """
+        Handles GET request the admin dashboard.
+        
+        Args:
+            request (Request): The Http request
+
+        Returns:
+            response (Response): A response containing a welcome message.
+
+        """
+
+        message = {
+            "detail": "welcome to the admin dashboard updated."
+        }
+
+        return Response(message, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdmin])
