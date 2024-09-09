@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
 
 from .permissions import IsAdmin
 from cafecustomer.serializers import (
@@ -230,3 +231,89 @@ class DetailUpdateDeleteCategory(APIView):
         }
        
         return Response(response, status=status.HTTP_204_NO_CONTENT)
+    
+
+class FoodItemCreateView(APIView):
+    """
+    View to handle creating of fooditems under a specific category.
+
+    Only accessible to admin users.
+
+    Methods:
+        
+        post: Create a new fooditem under the specified category.
+
+    """
+
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = FoodItemSerializer
+
+    def post(self, request, category_id):
+        """
+        Handle POST request to create a new food item under the specified category.
+
+        Args:
+            request (HttpRequest): The HTTP request object containing the food item data.
+            category_id (UUID): The UUID of the category under which the food item is created.
+
+        Returns:
+            Response: A JSON response with the created food item data or an error message.
+        """
+
+        try:
+            category = Category.objects.get(id=category_id)
+        except Category.DoesNotExist:
+            raise NotFound("Category not found.")
+        
+        serializer = FoodItemSerializer(data=request.data)
+        if serializer.is_valid():
+            # Set the category field to the retrieved category
+            serializer.save(category=category)
+            # Return the created food item data
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        # Return validation errors if the data is invalid
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FoodItemListView(APIView):
+    """
+    View to handle listing of fooditems under a specific category.
+
+    Only accessible to admin users.
+
+    Methods:
+        
+        get: Create a new fooditem under the specified category.
+
+    """
+
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = FoodItemSerializer
+
+    def get(self, request, category_id):
+        """
+        Handle get request to fetch fooditems under the specified category.
+
+        Args:
+            request (HttpRequest): The HTTP request.
+            category_id (UUID): The UUID of the category for the fooditems.
+
+        Returns:
+            Response: A JSON response with all the fooditems or an error message.
+        """
+
+        try:
+            category = Category.objects.get(id=category_id)
+        except Category.DoesNotExist:
+            raise NotFound("Category not found.")
+        
+        fooditems = FoodItem.objects.filter(category=category)
+
+        if not fooditems:
+            return Response({"detail":"No fooditems under this category"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = FoodItemSerializer(fooditems, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

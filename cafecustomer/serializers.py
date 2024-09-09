@@ -38,14 +38,11 @@ class FoodItemSerializer(serializers.ModelSerializer):
         is_available (BooleanField): Availability of the fooditem.
     """
 
-    category = serializers.SlugRelatedField(
-        queryset = Category.objects.all(),
-        slug_field = "name"
-    )
-
+    category = CategorySerializer(read_only=True)
+    
     class Meta:
         model = FoodItem
         fields = [
-            "id", "category","name", "description", "price", "is_available", "created_at", "updated_at"
+            "id", "name", "description", "price", "is_available", "created_at", "updated_at", "category"
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at"]
