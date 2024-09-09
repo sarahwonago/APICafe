@@ -22,11 +22,13 @@ class AdminHome(APIView):
     Only accessible to the admin.
 
     """
+
+
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
         """
-        Handles GET request the admin dashboard.
+        Handles GET request for the admin dashboard.
         
         Args:
             request (Request): The Http request
@@ -43,27 +45,76 @@ class AdminHome(APIView):
         return Response(message, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, IsAdmin])
-def add_category(request):
+
+class ListCreateCategory(APIView):
     """
-    Create a new category.
+    View to handle creating and listing categories.
+    Allows searching for categories by name.
 
     Only accessible to admin users.
 
-    Args:
-        request (Request): The HTTP request containing the category data.
+    Methods:
+        get: List all categories or search for categories by name.
+        post: Create a new category.
 
-    Returns:
-        Response: A JSON response containing the newly created category or errors.
     """
-    serializer = CategorySerializer(data=request.data)
 
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = CategorySerializer
+
+    def get(self, request):
+        """
+        Handles GET request for fetching all categories
+        or searching by category name.
+        
+        Args:
+            request (Request): The Http request
+
+        Returns:
+            response (Response): A response containing all categories
+            or search results.
+
+        """
+
+        search_query = request.query_params.get("name")
+
+        if search_query:
+            categories = Category.objects.filter(name__icontains=search_query)
+        else:
+            categories = Category.objects.all()
+
+        if not categories.exists():
+            response ={
+                "detail":"No categories found."
+            }
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = CategorySerializer(categories, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        """
+        Handles POST request for  creating a new category.
+        
+        Args:
+            request (Request): The Http request containing the data
+
+        Returns:
+            response (Response): A response containing the created category
+            or the errors if it fails.
+
+        """
+
+        serializer = CategorySerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdmin])
