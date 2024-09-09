@@ -317,3 +317,93 @@ class FoodItemListView(APIView):
         serializer = FoodItemSerializer(fooditems, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class FoodItemDetailView(APIView):
+    """
+    View to handle retrieving, updating or deleting of a single fooditem.
+
+    Only accessible to admin users.
+
+    Methods:
+        
+        get: fetches a fooditem.
+        put: updates a fooditem.
+        delete: deletes a fooditem.
+
+    """
+
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = FoodItemSerializer
+
+    def get_object(self, fooditem_id):
+        """
+        Utility function to fetch a fooditem.
+
+        Args:
+            fooditem_id (UUID): UUID of the fooditem to be fetched.
+        Returns:
+            fooditem (FoodItem): fooditem or error if not found.
+        """
+
+        try:
+            fooditem = FoodItem.objects.get(id=fooditem_id)
+
+        except FoodItem.DoesNotExist:
+            return Response({"detail": "FoodItem not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        return fooditem
+    
+    def get(self, request, fooditem_id):
+        """
+        Handle GET requests to retrieve a specific food item by its ID.
+        
+        Args:
+            request (Request): The HTTP request object.
+            fooditem_id (UUID): The ID of the food item to retrieve.
+        
+        Returns:
+            A JSON response containing the food item details.
+        """
+        fooditem = self.get_object(fooditem_id=fooditem_id)
+
+        serializer = FoodItemSerializer(fooditem)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request, fooditem_id):
+        """
+        Handle PUT requests to update a specific food item by its ID.
+        
+        Args:
+            request (Request): The HTTP request object.
+            fooditem_id (UUID): The ID of the food item to update.
+        
+        Returns:
+            A JSON response containing the updated food item details.
+        """
+        fooditem = self.get_object(fooditem_id=fooditem_id)
+
+        serializer = FoodItemSerializer(data=request.data, instance=fooditem)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, fooditem_id):
+        """
+        Handle DELETE requests to delete a specific food item by its ID.
+        
+        Args:
+            request (Request): The HTTP request object.
+            fooditem_id (UUID): The ID of the food item to delete.
+        
+        Returns:
+            A JSON response confirming the deletion.
+        """
+        fooditem = self.get_object(fooditem_id=fooditem_id)
+        fooditem.delete()
+
+        return Response({"detail":"Fooditem deleted successfully."}, status=status.HTTP_200_OK)

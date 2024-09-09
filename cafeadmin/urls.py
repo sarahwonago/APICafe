@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (AdminHome, ListCreateCategory, DetailUpdateDeleteCategory,
-                    FoodItemCreateView, FoodItemListView
+                    FoodItemCreateView, FoodItemListView, FoodItemDetailView,
                     )
 
 urlpatterns = [
@@ -9,4 +9,5 @@ urlpatterns = [
     path("category/<uuid:pk>/", DetailUpdateDeleteCategory.as_view(), name="category-detail"),
     path("categories/<uuid:category_id>/addfooditem/", FoodItemCreateView.as_view(), name="create-fooditem"),
     path("categories/<uuid:category_id>/fooditems/", FoodItemListView.as_view(), name="list-fooditem"),
+    path("fooditem/<uuid:fooditem_id>/", FoodItemDetailView.as_view(), name="fooditem-detail"),
 ]

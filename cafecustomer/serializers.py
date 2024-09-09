@@ -38,11 +38,34 @@ class FoodItemSerializer(serializers.ModelSerializer):
         is_available (BooleanField): Availability of the fooditem.
     """
 
+    category_id = serializers.UUIDField(required=False, write_only=True)
     category = CategorySerializer(read_only=True)
     
     class Meta:
         model = FoodItem
         fields = [
-            "id", "name", "description", "price", "is_available", "created_at", "updated_at", "category"
+            "id", "name", "description", "price", "is_available", "created_at", "updated_at", "category", "category_id"
         ]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+        def update(self, instance, validated_data):
+            """
+            Update a FoodItem instance.
+
+            Args:
+                instance (FoodItem): The existing food item instance to update.
+                validated_data (dict): The validated data containing the updates.
+            
+            Returns:
+                FoodItem: The updated food item instance.
+            """
+            category_id = validated_data.pop("category_id", None)
+
+            if category_id:
+                try:
+                    category = Category.objects.get(id=category_id)
+                    instance.category = category
+                except Category.DoesNotExist:
+                    raise serializers.ValidationError({"category_id":"Invalid Category Id provided."})
+            
+            return super().update(instance, validated_data)
