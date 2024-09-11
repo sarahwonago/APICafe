@@ -61,7 +61,7 @@ class FoodItem(models.Model):
     )
     name = models.CharField(max_length=250, unique=True)
     price = models.DecimalField(max_digits=6, decimal_places=2)
-    #image = models.ImageField(upload_to="food_images/", default="food_images/default.jpg")
+    # image = models.ImageField(upload_to="food_images/", default="food_images/default.jpg")
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -242,7 +242,13 @@ class SpecialOffer(models.Model):
     class Meta:
         verbose_name_plural = "SpecialOffers"
 
+    OFFER_CHOICES = (
+        ('CHRISTMAS','Christmas'),
+        ('BOXING DAY', 'Boxing Day'),
+        ('EASTER', 'Easter')
+    )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200, choices=OFFER_CHOICES)
     fooditem = models.ForeignKey(
         FoodItem,
         related_name="specialoffer",
@@ -258,4 +264,22 @@ class SpecialOffer(models.Model):
         return self.start_date <= now <= self.end_date
 
     def __str__(self):
-        return f"{self.menu_item.name} - {self.discount_percentage}% Off"
+        return f"{self.fooditem.name} - {self.discount_percentage}% Off"
+    
+
+class RedemptionOption(models.Model):
+    name = models.CharField(max_length=100)
+    points_required = models.PositiveIntegerField()
+    description = models.TextField()
+
+    def __str__(self):
+        return f"Redeem {self.name} for {self.points_required} points"
+    
+
+class RedemptionTransaction(models.Model):
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    redemption_option = models.ForeignKey(RedemptionOption, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.customer.name} redeemed {self.redemption_option.points_required} points"
