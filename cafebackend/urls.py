@@ -8,6 +8,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView
     )
 
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -21,6 +23,11 @@ urlpatterns = [
     path("api/account/", include('account.urls')),
     path("api/customer/", include('cafecustomer.urls')),
     path("api/cafeadmin/", include('cafeadmin.urls')),
+
+    # schema, redoc docs, swagger ui
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("api/schema/swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

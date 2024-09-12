@@ -41,10 +41,17 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     # third-party apps
+    # django rest framework
     "rest_framework",
+
+    # drf simplejwt
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
-    "drf_yasg",
+
+    # drf specatcular
+    "drf_spectacular",
+
+    # corsheaders
     "corsheaders",
 
     #  custom apps
@@ -146,6 +153,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+
+    'DEFAULT_SCHEMA_CLASS': "drf_spectacular.openapi.AutoSchema",
     
 }
 
@@ -173,4 +182,10 @@ SIMPLE_JWT ={
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
     'JTI_CLAIM': 'jti',
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE":"CafeApi",
+    "DESCRIPTION":"Api endpoints for a cafetaria management system.",
+    "VERSION":"1.00"
 }
