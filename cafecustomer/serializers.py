@@ -40,11 +40,12 @@ class FoodItemSerializer(serializers.ModelSerializer):
 
     category_id = serializers.UUIDField(required=False, write_only=True)
     category = CategorySerializer(read_only=True)
+    image = serializers.ImageField(required = False)
     
     class Meta:
         model = FoodItem
         fields = [
-            "id", "name", "description", "price", "is_available", "created_at", "updated_at", "category", "category_id"
+            "id", "name", "description", "price","image", "is_available", "created_at", "updated_at", "category", "category_id"
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
@@ -67,5 +68,10 @@ class FoodItemSerializer(serializers.ModelSerializer):
                     instance.category = category
                 except Category.DoesNotExist:
                     raise serializers.ValidationError({"category_id":"Invalid Category Id provided."})
+                
+            # handles image update if provided 
+            image = validated_data.pop("image", None)
+            if image:
+                instance.image = image
             
             return super().update(instance, validated_data)

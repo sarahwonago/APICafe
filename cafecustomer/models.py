@@ -61,7 +61,7 @@ class FoodItem(models.Model):
     )
     name = models.CharField(max_length=250, unique=True)
     price = models.DecimalField(max_digits=6, decimal_places=2)
-    # image = models.ImageField(upload_to="food_images/", default="food_images/default.jpg")
+    image = models.ImageField(upload_to="food_images/", default="food_images/default.jpg")
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -248,7 +248,7 @@ class SpecialOffer(models.Model):
         ('EASTER', 'Easter')
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=200, choices=OFFER_CHOICES)
+    name = models.CharField(max_length=200, choices=OFFER_CHOICES, default="Christmas")
     fooditem = models.ForeignKey(
         FoodItem,
         related_name="specialoffer",
