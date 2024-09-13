@@ -291,7 +291,8 @@ class FoodItemListView(APIView):
 
     Methods:
         
-        get: Create a new fooditem under the specified category.
+        get: Fetches all fooditems under the specified category.
+        post: Create a new fooditem under the specified category.
 
     """
 
@@ -414,6 +415,44 @@ class FoodItemDetailView(APIView):
         fooditem.delete()
 
         return Response({"detail":"Fooditem deleted successfully."}, status=status.HTTP_200_OK)
+
+class FoodItemListAllView(APIView):
+    """
+    View to handle listing of all fooditems.
+
+    Only accessible to admin users.
+
+    Methods:
+        
+        get: Fetches all fooditems.
+
+    """
+
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = FoodItemSerializer
+
+    def get(self, request):
+        """
+        Handle get request to fetch all fooditems.
+
+        Args:
+            request (HttpRequest): The HTTP request.
+            
+        Returns:
+            Response: A JSON response with all the fooditems or an error message.
+        """
+
+        
+        
+        fooditems = FoodItem.objects.all()
+
+        if not fooditems:
+            return Response({"detail":"No fooditems available"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = FoodItemSerializer(fooditems, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class DinningTableViewSet(viewsets.ModelViewSet):
