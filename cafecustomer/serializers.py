@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import (Category, FoodItem, DiningTable, SpecialOffer)
+from .models import (
+    Category, FoodItem, DiningTable, SpecialOffer, CartItem, Cart, Order
+    )
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -153,3 +155,64 @@ class SpecialOfferSerializer(serializers.ModelSerializer):
             # return instance
 
             return super().update(instance,validated_data)
+        
+class CartItemSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the CartItem model.
+
+    Handles serialization and validation for adding items to the cart.
+
+    Fields:
+        id (UUIDField): Unique identifier for the order.
+        cart(Cart): cart to store the cartitems.
+        fooditem (FoodItem): the fooditem which represents the cartitem
+        quantity (PositiveIntegerField): the cartitem quantity
+        created_at (DateTimeField): Timestamp when the cartitem was created.
+        price(DecimalField): the price for one fooditem
+        total_price(DecimalField): the total price for the fooditem times the quantity
+    """
+
+    class Meta:
+        model = CartItem
+        fields = [
+            "id", "cart", "fooditem", "quantity", "price", "total_price"
+        ]
+
+    def create(self, validated_data):
+        """
+        Create and return a new CartItem instance.
+        Updates the cart's total price.
+        """
+
+        cart = validated_data.get("cart")
+        fooditem = validated_data.get("fooditem")
+        quantity = validated_data.get("quantity")
+
+        # creates the cart item
+        cartitem = CartItem.objects.create(
+            cart=cart, fooditem=fooditem, quantity=quantity
+        )
+
+        # updates the carts total price
+        cart.save()
+
+        return cartitem
+    
+class Cart(serializers.ModelSerializer):
+    """
+    Serializer for the Cart model.
+
+    Includes all cartitems.
+
+    Fields:
+        id (UUIDField): Unique identifier for the order.    
+        user (User): the owner of the cart
+        cartitems (CartItem): the cartitems
+        total_price(DecimalField): the total price of the cart based on the items in it.
+    """
+
+    class Meta:
+        model = Cart
+        fields = [
+            "id", "user", "cartitems", "total_price"
+        ]

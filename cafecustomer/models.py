@@ -164,7 +164,17 @@ class UserDinningTable(models.Model):
 
 class Order(models.Model):
     """
-    Defines the orders.
+    Defines an Order.
+
+    Attributes:
+        id (UUIDField): Unique identifier for the order.
+        user(User): the user to whom the order belongs to.
+        total_price (DecimalField): the total price for the order
+        is_paid (BooleanField): indicates if an order has been paid for.
+        estimated_time (IntegerField): estimated delivery time for the order
+        status (CharField): the order status
+        created_at (DateTimeField): Timestamp when the order was created.
+        updated_at (DateTimeField): Timestamp when the order was updated.
     """
 
     class Meta:
@@ -204,7 +214,11 @@ class Order(models.Model):
     
 class Cart(models.Model):
     """
-    Defines the Cart.
+    Defines a Cart.
+
+    Attributes:
+        id (UUIDField): Unique identifier for the cart.
+        user(ForeignKey): the user to whom the cart belongs to.
     """
 
     class Meta:
@@ -231,7 +245,15 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     """
-    Defines the individual items within a Cart.
+    Defines an individual item in a cart.
+
+    Attributes:
+        id (UUIDField): Unique identifier for the order.
+        cart(Cart): cart to store the cartitems.
+        fooditem (FoodItem): the fooditem which represents the cartitem
+        quantity (PositiveIntegerField): the cartitem quantity
+        created_at (DateTimeField): Timestamp when the cartitem was created.
+       
     """
 
     class Meta:
