@@ -244,7 +244,16 @@ class Transaction(models.Model):
 
 class SpecialOffer(models.Model):
     """
-    Defines special offer.
+    Defines a specialoffer that can be applied to multiple fooditems.
+
+    Attributes:
+        id (UUIDField): Unique identifier for the special offer.
+        name (CharField): The name of the special offer (e.g., Christmas, Easter).
+        fooditems (ManyToManyField): The food items that the offer applies to.
+        discount_percentage (DecimalField): The percentage discount offered.
+        start_date (DateTimeField): When the offer starts.
+        end_date (DateTimeField): When the offer ends.
+        description (TextField): Additional details about the offer.
     """
 
     class Meta:
@@ -257,10 +266,9 @@ class SpecialOffer(models.Model):
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, choices=OFFER_CHOICES, default="Christmas")
-    fooditem = models.ForeignKey(
+    fooditems = models.ManyToManyField(
         FoodItem,
-        related_name="specialoffer",
-        on_delete=models.CASCADE
+        related_name="specialoffers"
     )
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)  # e.g., 20.00 for 20%
     start_date = models.DateTimeField()
@@ -268,11 +276,14 @@ class SpecialOffer(models.Model):
     description = models.TextField(blank=True, null=True)
 
     def is_active(self):
+        """
+        Checks if the offer is currently active based on the current date.
+        """
         now = timezone.now()
         return self.start_date <= now <= self.end_date
 
     def __str__(self):
-        return f"{self.fooditem.name} - {self.discount_percentage}% Off"
+        return f"{self.name} - {self.discount_percentage}% Off"
     
 
 class RedemptionOption(models.Model):

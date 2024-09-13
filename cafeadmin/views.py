@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -11,11 +13,13 @@ from cafecustomer.serializers import (
     CategorySerializer,
     FoodItemSerializer, 
     DinningTableSerializer,
+    SpecialOfferSerializer,
 )
 from cafecustomer.models import (
     Category,
     FoodItem,
     DiningTable,
+    SpecialOffer,
 )
 
 
@@ -427,3 +431,151 @@ class DinningTableViewSet(viewsets.ModelViewSet):
     queryset = DiningTable.objects.all()
     serializer_class = DinningTableSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
+
+
+class SpecialOfferListCreateAPIView(APIView):
+    """
+    API view for listing  and creating special offers.
+
+    Only accessible to admin users.
+
+    Methods:
+        GET: Lists all special offers.
+        POST: Creates a new special offer.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = DinningTableSerializer
+
+    def get(self, request):
+        """
+        Handle GET requests for retrieving all special offers.
+
+        Args:
+            request (Request): The Http request
+
+        Returns:
+            Response: A response containing all special offers or 404.
+        """
+
+        specialoffers = SpecialOffer.objects.filter(start_date__lte = timezone.now(), end_date__gte=timezone.now())
+
+        if not specialoffers.exists():
+            response={
+                "detail":"No special offers today."
+            }
+
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = SpecialOfferSerializer(specialoffers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        """
+        Handle POST requests for creating a new special offer.
+
+        Args:
+            request (Request): The Http request
+
+        Returns:
+            Response: A response containing the created special offer.
+        """
+
+
+        serializer = SpecialOfferSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SpecialOfferRetrieveUpdateDestroyAPIView(APIView):
+    """
+    View to handle retrieving, updating, and deleting a single specialoffer.
+
+    Only accessible to admin users.
+
+    Methods:
+        get: Retrieve a single specialoffer by its ID.
+        put: Updates a specialoffer.
+        delete: Deletes a specialoffer.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = DinningTableSerializer
+
+
+    def get_object(self, offer_id):
+        """
+        Retrieves a special offer by its ID.
+
+        Args:
+            offer_id(UUID): the unique identifier of the special offer
+
+        Returns:
+            specialoffer(SpecialOffer): the specialoffer instance or error
+        """
+
+        try:
+            specialoffer = SpecialOffer.objects.get(id=offer_id)
+
+        except SpecialOffer.DoesNotExist:
+            return Response({"detail": "SecialOffer not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        return specialoffer
+    
+    def get(self, request, offer_id):
+        """
+        Handle GET requests to retrieve a specific specialoffer by its ID.
+        
+        Args:
+            request (Request): The HTTP request object.
+            offer_id (UUID): The ID of the specialoffer to retrieve.
+        
+        Returns:
+            A JSON response containing the specialoffer details.
+        """
+        specialoffer = self.get_object(offer_id=offer_id)
+
+        serializer = SpecialOfferSerializer(specialoffer)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request, offer_id):
+        """
+        Handle PUT requests to update a specific specialoffer by its ID.
+        
+        Args:
+            request (Request): The HTTP request object.
+            offer_id (UUID): The ID of the food item to update.
+        
+        Returns:
+            A JSON response containing the updated specialoffer details.
+        """
+        specialoffer = self.get_object(offer_id=offer_id)
+
+        serializer = SpecialOfferSerializer(data=request.data, instance=specialoffer)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, offer_id):
+        """
+        Handle DELETE requests to delete a specific specialoffer by its ID.
+        
+        Args:
+            request (Request): The HTTP request object.
+            offer_id (UUID): The ID of the specialoffer to delete.
+        
+        Returns:
+            A JSON response confirming the deletion.
+        """
+        specialoffer = self.get_object(offer_id=offer_id)
+        specialoffer.delete()
+
+        return Response({"detail":"Specialoffer deleted successfully."}, status=status.HTTP_200_OK)
+

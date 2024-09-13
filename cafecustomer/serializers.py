@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import (Category, FoodItem, DiningTable)
+from .models import (Category, FoodItem, DiningTable, SpecialOffer)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -96,3 +96,60 @@ class DinningTableSerializer(serializers.ModelSerializer):
         model= DiningTable
         fields = ["id","table_number", "is_occupied", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+class SpecialOfferSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the SpecialOffer model.
+
+    Fields:
+        id (UUIDField): Unique identifier for the special offer.
+        name (CharField): Name of the special offer.
+        fooditems (ManyToManyField): The food items the offer applies to.
+        discount_percentage (DecimalField): The percentage discount offered.
+        start_date (DateTimeField): Start date of the offer.
+        end_date (DateTimeField): End date of the offer.
+        description (TextField): Additional details about the offer.
+    """
+
+    fooditems = serializers.PrimaryKeyRelatedField(
+        many=True, 
+        queryset=FoodItem.objects.all()
+        )
+    
+
+    class Meta:
+        model = SpecialOffer
+        fields = ['id', 'name', 'fooditems','discount_percentage', 'start_date', 'end_date', 'description']
+
+        def create(self, validated_data):
+            """
+            Overrides the create method to handle adding multiple fooditems.
+            """
+
+            fooditems_data = validated_data.pop("fooditems")
+            specialoffer = SpecialOffer.objects.create(
+                **validated_data
+            )
+            specialoffer.fooditems.set(fooditems_data)
+
+            return specialoffer
+        
+        def update(self, instance, validated_data):
+            """
+            Overrides the update method to handle updating multiple fooditems.
+            """
+            fooditems_data = validated_data.pop("fooditems", None)
+
+            if fooditems_data:
+                instance.fooditems.set(fooditems_data)
+
+
+            # instance.name = validated_data.get('name', instance.name)
+            # instance.discount_percentage = validated_data.get('discount_percentage', instance.discount_percentage)
+            # instance.start_date = validated_data.get('start_date', instance.start_date)
+            # instance.end_date = validated_data.get('end_date', instance.end_date)
+            # instance.description = validated_data.get('description', instance.description)
+            # instance.save()
+            # return instance
+
+            return super().update(instance,validated_data)
