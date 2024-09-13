@@ -8,7 +8,7 @@ from .permissions import IsCustomer
 from django.shortcuts import get_object_or_404
 
 from .models import (Cart, CartItem, Order, FoodItem)
-from .serializers import (CartItemSerializer, )
+from .serializers import (CartItemSerializer, CartSerializer)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsCustomer])
@@ -21,7 +21,6 @@ class AddToCartAPIView(APIView):
     API view for adding a food item to the user's cart.
 
     The user must be authenticated, and the food item must exist in the system.
-    If the food item is already in the cart, it will increase the quantity.
 
     Methods:
         post: Adds a fooditem to the cart.
@@ -50,9 +49,8 @@ class AddToCartAPIView(APIView):
         cart_item = CartItem.objects.filter(cart=cart, fooditem=fooditem).first()
 
         if cart_item:
-            # if the item exists, update the quantity
-            cart_item.quantity += int(quantity)
-            cart_item.save()
+            # if the item exists, item already exists in cart
+            return Response({"detail":"Item already exists in cart"}, status=status.HTTP_200_OK)
         
         else:  
             # if the item does not exist, create an new CartItem 
@@ -71,11 +69,90 @@ class AddToCartAPIView(APIView):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
-        cart_serializer = CartItemSerializer(cart_item)
-        return Response(cart_serializer.data, status=status.HTTP_201_CREATED)
-            
+       
+class CartItemsAPIView(APIView):
+    """
+    API view for fetching all the cartitems.
 
+    The user must be authenticated to view the cart.
+
+    Methods:
+        get: fetches all cartitems in the user's cart.
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer] 
+
+
+    def get(self, request, *args, **kwargs):
+        """
+        Handle GET requests to retrieve all cart items for the authenticated user.
+        """
+        user = request.user
+
+        # fetches or creates a cart for the user
+        cart, created = Cart.objects.get_or_create(user=user)
+        cart_items = cart.cartitems.all()
+
+        if cart_items:
+            serializer = CartItemSerializer(cart_items, many=True)
+            response = {
+                "cartitems": serializer.data,
+                "total_price":cart.total_price
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+        return Response({"detail":"Cart is empty."}, status=status.HTTP_200_OK)
+    
+class CartItemUpdateAPIView(APIView):
+    """
+    API view for updating the cartitem.
+
+    The user must be authenticated to view the cart.
+
+    Methods:
+        patch: updates the quantity for a specific cartitem.
+        delete: deletes a specific cartitem from the cart.
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer] 
+
+    def patch(self, request, *args,  **kwargs):
+        """
+        Handle PATCH requests to update a cartitem's quantity.
+
+        The request must include the quantity field.
+        """
+        user = request.user
+
+        cartitem_id = kwargs.get("cartitem_id") # passed in the url
+        quantity = request.data.get("quantity")
+
+        # validates the cartitem belongs to the user
+        cartitem = get_object_or_404(CartItem, id=cartitem_id, cart__user=user)
+
+        # updates the quantity if provided:
+        if quantity and int(quantity) > 0:
+            cartitem.quantity = int(quantity)
+            cartitem.save()
+        else:
+          return Response({"detail":"Invalid quantity"}, status=status.HTTP_400_BAD_REQUEST)
         
+        serializer = CartItemSerializer(cartitem)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, *args,  **kwargs):
+        """
+        Handle DELETE requests to remove a cartitem from the user's cart.
 
+        """
+        user = request.user
 
+        cartitem_id = kwargs.get("cartitem_id")
 
+        # validates the cartitem belongs to the user
+        cartitem = get_object_or_404(CartItem, id=cartitem_id, cart__user=user)
+
+        # deletes the cartitem
+        cartitem.delete()
+
+        return Response({"detail":"Item removed from Cart"}, status=status.HTTP_200_OK)

@@ -198,7 +198,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
         return cartitem
     
-class Cart(serializers.ModelSerializer):
+class CartSerializer(serializers.ModelSerializer):
     """
     Serializer for the Cart model.
 
