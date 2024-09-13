@@ -4,15 +4,18 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
+from rest_framework import viewsets
 
 from .permissions import IsAdmin
 from cafecustomer.serializers import (
     CategorySerializer,
-    FoodItemSerializer
+    FoodItemSerializer, 
+    DinningTableSerializer,
 )
 from cafecustomer.models import (
     Category,
     FoodItem,
+    DiningTable,
 )
 
 
@@ -407,3 +410,20 @@ class FoodItemDetailView(APIView):
         fooditem.delete()
 
         return Response({"detail":"Fooditem deleted successfully."}, status=status.HTTP_200_OK)
+
+
+class DinningTableViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for managing CRUD operations for DinningTable model.
+
+    Actions:
+    -List all dinning tables(GET)
+    -Creates a single dinning table(POST)
+    -Retrieve a single dinning table (GET)
+    -Updates an existing dinning table(PUT/PATCH)
+    -Deletes a dinning table(DELETE)
+    """
+
+    queryset = DiningTable.objects.all()
+    serializer_class = DinningTableSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]

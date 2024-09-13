@@ -1,7 +1,13 @@
+from rest_framework.routers import DefaultRouter
 from django.urls import path
 from .views import (AdminHome, ListCreateCategory, DetailUpdateDeleteCategory,
                     FoodItemCreateView, FoodItemListView, FoodItemDetailView,
+                    DinningTableViewSet,
                     )
+
+# defines the router and registers th viewset
+router = DefaultRouter()
+router.register("dinningtables", DinningTableViewSet, basename="dinningtable")
 
 urlpatterns = [
     path("dashboard/", AdminHome.as_view(), name="admin-home"),
@@ -11,3 +17,5 @@ urlpatterns = [
     path("categories/<uuid:category_id>/fooditems/", FoodItemListView.as_view(), name="list-fooditem"),
     path("fooditem/<uuid:fooditem_id>/", FoodItemDetailView.as_view(), name="fooditem-detail"),
 ]
+
+urlpatterns += router.urls

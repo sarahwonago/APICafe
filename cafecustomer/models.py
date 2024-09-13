@@ -41,7 +41,7 @@ class FoodItem(models.Model):
         category (ForeignKey): The category in which the fooditem belongs to.
         name (CharField): The name of the fooditem.
         price (DecimalField): The price of the fooditem.
-        #image = models.ImageField(upload_to="food_images/", default="food_images/default.jpg")
+        image (ImageField) :The imageof the fooditem.
         description (TextField): Brief description for the fooditem.
         created_at (DateTimeField): Timestamp when the fooditem was created.
         updated_at (DateTimeField): Timestamp when the fooditem was updated.
@@ -73,8 +73,16 @@ class FoodItem(models.Model):
 
 class DiningTable(models.Model):
     """
-    Defines the dining tables.
+    Model representing a dinningtable.
+
+    Attributes:
+        id (UUIDField): The unique identifier for the dinningtable
+        table_number (PositiveIntegerField)- represents the table number
+        is_occupied (BooleanField): Indicates whether the table is currently available
+        created_at (DateTimeField): Timestamp when the dinningtable was created.
+        updated_at (DateTimeField): Timestamp when the dinningtable was updated.
     """
+
 
     class Meta:
         verbose_name_plural = "Dining Tables"

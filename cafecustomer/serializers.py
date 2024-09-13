@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, FoodItem
+from .models import (Category, FoodItem, DiningTable)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class FoodItemSerializer(serializers.ModelSerializer):
         category (ForeignKey): The category in which the fooditem belongs to.
         name (CharField): The name of the fooditem.
         price (DecimalField): The price of the fooditem.
-        #image = models.ImageField(upload_to="food_images/", default="food_images/default.jpg")
+        image (ImageField)
         description (TextField): Brief description for the fooditem.
         created_at (DateTimeField): Timestamp when the fooditem was created.
         updated_at (DateTimeField): Timestamp when the fooditem was updated.
@@ -75,3 +75,24 @@ class FoodItemSerializer(serializers.ModelSerializer):
                 instance.image = image
             
             return super().update(instance, validated_data)
+        
+
+class DinningTableSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the dinningtable model.
+
+    Converts the DinningTable model instance into JSON and vice versa.
+
+    Fields:
+        id (UUIDField): The unique identifier for the dinningtable
+        table_number (PositiveIntegerField)- represents the table number
+        is_occupied (BooleanField): Indicates whether the table is currently available.
+        created_at (DateTimeField): Timestamp when the dinningtable was created.
+        updated_at (DateTimeField): Timestamp when the dinningtable was updated.
+
+    """
+
+    class Meta:
+        model= DiningTable
+        fields = ["id","table_number", "is_occupied", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
