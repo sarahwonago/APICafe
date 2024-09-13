@@ -175,7 +175,9 @@ class Order(models.Model):
     ESTIMATED_TIME_CHOICES = [(i, f"{i} minutes") for i in range(5, 65, 5)]
     STATUS_CHOICES = (
         ("COMPLETE", "Complete"),
-        ("PENDING", "Pending")
+        ("PENDING", "Pending"),
+        ("READY", "Ready for delivery"),
+        ("DELIVERED", "Delivered"),
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -185,7 +187,7 @@ class Order(models.Model):
         on_delete=models.CASCADE
     )
     
-    total_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    total_price = models.DecimalField(max_digits=8, decimal_places=2)
     is_paid = models.BooleanField(default=False)
     estimated_time = models.IntegerField(
         "Estimated Delivery Time",
@@ -199,40 +201,78 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id} - {self.user.username}"
     
-
-
-class OrderItem(models.Model):
+    
+class Cart(models.Model):
     """
-    Defines the individual items within an order.
+    Defines the Cart.
     """
 
     class Meta:
-        verbose_name_plural = "Order Items"
-        unique_together = ('order', 'fooditem')
+        verbose_name_plural = "Carts"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    order = models.ForeignKey(
-        Order,
-        related_name="orderitems",
+    user = models.OneToOneField(
+        User,
+        related_name="cart",
+        on_delete=models.CASCADE
+    )
+
+
+    def __str__(self):
+        return f"{self.user.username}'s cart."
+    
+    @property
+    def total_price(self):
+        """
+        Dynamically Calculates the total price based on the cartitems.
+        """
+        return sum(item.total_price for item in self.cartitems.all())
+        
+
+class CartItem(models.Model):
+    """
+    Defines the individual items within a Cart.
+    """
+
+    class Meta:
+        verbose_name_plural = "Cart Items"
+        unique_together = ('cart', 'fooditem')
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    cart = models.ForeignKey(
+        Cart,
+        related_name="cartitems",
         on_delete=models.CASCADE
     )
     fooditem = models.ForeignKey(
         FoodItem,
-        related_name="orderitems",
+        related_name="cartitems",
         on_delete=models.CASCADE
     )
     quantity = models.PositiveIntegerField(
         default = 1,
         validators=[MinValueValidator(1)],
-        help_text="Quantity of the item"
+        help_text="Quantity of the cartitem"
     )
-
-    total_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.quantity} x {self.fooditem.name} (Order {self.order.id})"
+        return f"{self.quantity} x {self.fooditem.name}"
+    
+    @property
+    def total_price(self):
+        """
+        Calculates the total price of the fooditem dynamically.
+        """
+        return self.fooditem.price * self.quantity
+        
+    @property
+    def price(self):
+        """
+        Gets the price of the fooditem dynamically.
+        """
+        return self.fooditem.price 
 
 
 class Review(models.Model):
