@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import IsCustomer
 from django.shortcuts import get_object_or_404
 
-from .models import (Cart, CartItem, Order, FoodItem)
+from .models import (Cart, CartItem, Order, FoodItem, DiningTable)
 from .serializers import (CartItemSerializer, CartSerializer, OrderSerializer)
 
 @api_view(['GET'])
@@ -185,6 +185,15 @@ class CreateOrderAPIView(APIView):
 
 
         user = request.user
+        # fetches the dinning table 
+        dinning_table_id = request.data.get("dining_table")
+
+        try:
+            dinning_table = DiningTable.objects.get(id=dinning_table_id)
+        except DiningTable.DoesNotExist:
+            return Response({"detail":"Please indicate the dinning table."}, status=status.HTTP_400_BAD_REQUEST)
+
+
         cart, created = Cart.objects.get_or_create(user=user)
         cartitems = cart.cartitems.all()
 
@@ -203,10 +212,11 @@ class CreateOrderAPIView(APIView):
         order = Order.objects.create(
             user = user,
             total_price = total_price,
+            dining_table= dinning_table
         )
 
         # add the cart items to the order
-        # order.cartitems.add(cartitems)
+        # order.order_items.add(cartitems)
         # order.save()
 
         # cleares the cart after creating the order
@@ -216,10 +226,7 @@ class CreateOrderAPIView(APIView):
 
         response = {
             "message": "Order created successfully",
-            "order": serializer.data,
-            "total_price": total_price
+            "order": serializer.data
         }
         return Response(response, status=status.HTTP_201_CREATED)
-
-
 

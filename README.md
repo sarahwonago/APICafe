@@ -19,3 +19,7 @@ This is the backend API for the Cafeteria Management System, built with Django a
 ## API Endpoints
 
 1. Authentication: 
+
+
+Todo:
+-Handle sending the orderitems when the order is created successfully.(Modify the OrderSerializer)

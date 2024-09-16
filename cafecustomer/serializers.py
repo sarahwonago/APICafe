@@ -219,6 +219,20 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Order model.
+
+    Fields:
+        id (UUIDField): Unique identifier for the order.
+        user(User): the user to whom the order belongs to.
+        order_items(CartItem): orderitems 
+        total_price (DecimalField): the total price for the order
+        is_paid (BooleanField): indicates if an order has been paid for.
+        estimated_time (IntegerField): estimated delivery time for the order
+        status (CharField): the order status
+        created_at (DateTimeField): Timestamp when the order was created.
+        updated_at (DateTimeField): Timestamp when the order was updated.
+    """
     class Meta:
         model = Order
-        fields = ['id', 'user', 'total_price', 'is_paid', 'estimated_time', 'status', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'total_price', 'is_paid', 'order_items', 'dining_table','estimated_time', 'status', 'created_at', 'updated_at']
