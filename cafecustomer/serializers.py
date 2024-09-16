@@ -216,3 +216,9 @@ class CartSerializer(serializers.ModelSerializer):
         fields = [
             "id", "user", "cartitems", "total_price"
         ]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'user', 'total_price', 'is_paid', 'estimated_time', 'status', 'created_at', 'updated_at']

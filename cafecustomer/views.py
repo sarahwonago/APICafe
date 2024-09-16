@@ -8,7 +8,7 @@ from .permissions import IsCustomer
 from django.shortcuts import get_object_or_404
 
 from .models import (Cart, CartItem, Order, FoodItem)
-from .serializers import (CartItemSerializer, CartSerializer)
+from .serializers import (CartItemSerializer, CartSerializer, OrderSerializer)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsCustomer])
@@ -156,3 +156,70 @@ class CartItemUpdateAPIView(APIView):
         cartitem.delete()
 
         return Response({"detail":"Item removed from Cart"}, status=status.HTTP_200_OK)
+    
+
+class CreateOrderAPIView(APIView):
+    """
+    API view for creating an order from the cart.
+    Orders will only be created if there are cart items in the cart.
+
+    The user must be authenticated to create an order.
+
+    Methods:
+        post: creates a new order.
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer] 
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handles post requests to create an order from the user's cart.
+        - Ensures that the cart is not empty.
+        - Fetches the total price from the cart.
+        - Clears the cart once the order has been created.
+
+        Returns:
+        - A success message with the created order details and totalprice
+        - A message if the cart is empty.
+        """
+
+
+        user = request.user
+        cart, created = Cart.objects.get_or_create(user=user)
+        cartitems = cart.cartitems.all()
+
+        # if cart is empty
+        if not cartitems.exists():
+            response = {
+                "message": "Your cart is empty. Please add items to cart before placing an order"
+            }
+
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        # gets the total price from the cart
+        total_price = cart.total_price
+
+        # creates a new order
+        order = Order.objects.create(
+            user = user,
+            total_price = total_price,
+        )
+
+        # add the cart items to the order
+        # order.cartitems.add(cartitems)
+        # order.save()
+
+        # cleares the cart after creating the order
+        cartitems.delete()
+
+        serializer = OrderSerializer(order)
+
+        response = {
+            "message": "Order created successfully",
+            "order": serializer.data,
+            "total_price": total_price
+        }
+        return Response(response, status=status.HTTP_201_CREATED)
+
+
+
