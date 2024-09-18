@@ -8,9 +8,9 @@ from .permissions import IsCustomer
 from django.shortcuts import get_object_or_404
 
 from .models import (Cart, CartItem, Order, FoodItem, DiningTable,
-                     Notification)
+                     Notification, Review)
 from .serializers import (CartItemSerializer, CartSerializer, OrderSerializer,
-                          NotificationSerializer)
+                          NotificationSerializer, ReviewSerializer)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsCustomer])
@@ -331,3 +331,57 @@ class OrderHistoryAPIView(APIView):
 
         return Response({"message":"You have no past orders."}, status=status.HTTP_200_OK)
 
+
+class ReviewAPIView(APIView):
+    """
+    API view for reviewing a completed order.
+
+    The user must be authenticated.
+
+    Methods:
+        post: creates a review for an order.
+        get: gets all reviews a user has ever made
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer] 
+
+    def post(self, request, *args, **kwargs):
+        """
+        Allows a user to create a review for a food item from an order.
+        The user can only review food items on the same day they placed the order.
+        """
+
+        user = request.user
+        order_id= request.data.get("order", '')
+        order = get_object_or_404(Order, id=order_id, user=user)
+
+        if order.can_review:
+            serializer = ReviewSerializer(data=request.data)
+
+            if serializer.is_valid():
+                serializer.save(user=user, order=order)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        response = {
+                "detail":"Sorry, reviews can only be performed on the same day the order was created."
+            }
+
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
+
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieve all reviews for the authenticated user.
+        """
+        reviews = Review.objects.filter(user=request.user)
+        if reviews:
+            serializer = ReviewSerializer(reviews, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        response = {
+                "detail":"You have made no reviews for your orders."
+            }
+
+        return Response(response, status=status.HTTP_200_OK)

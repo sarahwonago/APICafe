@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (customer_home, AddToCartAPIView, CartItemsAPIView, CartItemUpdateAPIView,
-                    CreateOrderAPIView, PaymentAPIView, OrderHistoryAPIView)
+                    CreateOrderAPIView, PaymentAPIView, OrderHistoryAPIView,
+                    ReviewAPIView)
 
 urlpatterns = [
     path("dashboard/", customer_home, name="customer-home"),
@@ -9,5 +10,6 @@ urlpatterns = [
     path('cart/item/<uuid:cartitem_id>/', CartItemUpdateAPIView.as_view(), name='cartitem-detail'), 
     path("create-order/", CreateOrderAPIView.as_view(),name="create-order"),
     path("make-payment/", PaymentAPIView.as_view(), name="make-payment"),
-    path("order-history/", OrderHistoryAPIView.as_view(), name="order-history")
+    path("order-history/", OrderHistoryAPIView.as_view(), name="order-history"),
+    path("review/", ReviewAPIView.as_view(), name="list-create-review"),
 ]

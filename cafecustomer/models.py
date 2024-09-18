@@ -312,6 +312,13 @@ class Order(models.Model):
     def __str__(self):
         return f"Order for - {self.user.username} at: {self.dining_table}"
     
+    @property
+    def can_review(self):
+        """
+        Validates if the user can review an order the same day they paid for it.
+        """
+        return self.updated_at.date() == timezone.now().date()
+    
     
 class Notification(models.Model):
     """
@@ -321,7 +328,7 @@ class Notification(models.Model):
         id (UUIDField): Unique identifier for the notification.
         user(User): the user to whom the notification belongs.
         message(TextField): the body of the notification
-        created_at (DateTimeField): Timestamp when the cartitem was created.
+        created_at (DateTimeField): Timestamp when the notification was created.
        
     """
 
@@ -339,7 +346,15 @@ class Notification(models.Model):
 
 class Review(models.Model):
     """
-    Defines the reviews for orders.
+    Model to represent reviews for fooditem.
+
+    Attributes:
+        id (UUIDField): Unique identifier for review.
+        user(User): the reviewing the order.
+        order(Order): the order being reviewed
+        rating(PositiveIntegerField):the rating
+        comment(TextField): the review text
+        created_at (DateTimeField): Timestamp when the review was created.
     """
 
     class Meta:
@@ -360,6 +375,7 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review for Order {self.order.id}"
+    
 
 
 class CustomerPoint(models.Model):
