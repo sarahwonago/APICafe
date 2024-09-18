@@ -380,7 +380,13 @@ class Review(models.Model):
 
 class CustomerPoint(models.Model):
     """
-    Defines the customer points.
+    Model to track customer points.
+
+    Attributes:
+        id (UUIDField): Unique identifier for customerpoint.
+        user(User): the user to whom the points belong to.
+        points(PositiveIntegerField):points awarded
+
     """
 
     class Meta:
@@ -390,9 +396,19 @@ class CustomerPoint(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="customerpoints")
     points = models. PositiveIntegerField(default=0)
 
+    def __str__(self) -> str:
+        return f"{self.user.username} has {self.points} points"
+
 class Transaction(models.Model):
     """
-    Defines when each customer point was awarded.
+    Defines the transaction for the points awarded to the user.
+
+    Attributes:
+        id (UUIDField): Unique identifier for transaction.
+        customer_point(CustomerPoint): the customerpoint instance.
+        amount(DecimalField): the order total 
+        points_earned(PositiveIntegerField):points awarded based on the order total
+        date(DateTimeField): timestamp when the transaction was created
     """
 
     class Meta:
@@ -404,7 +420,8 @@ class Transaction(models.Model):
     points_earned = models.PositiveIntegerField() # points awarded based on the order total
     date = models.DateTimeField(auto_now_add=True)
 
-
+    def __str__(self) -> str:
+        return f"{self.points_earned} points awarded on {self.date.date()}"
 
 class RedemptionOption(models.Model):
     name = models.CharField(max_length=100)

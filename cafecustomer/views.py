@@ -12,6 +12,8 @@ from .models import (Cart, CartItem, Order, FoodItem, DiningTable,
 from .serializers import (CartItemSerializer, CartSerializer, OrderSerializer,
                           NotificationSerializer, ReviewSerializer)
 
+from .myutils import assign_points
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsCustomer])
 def customer_home(request):
@@ -276,6 +278,10 @@ class PaymentAPIView(APIView):
         if payment_successful:
             order.is_paid = True
             order.save()
+
+            # assigns points only if order's total_price is >= to 100
+            if order.total_price >= 100:
+                assign_points(order)
 
             # send a payment notification to the cafeadmin
 
