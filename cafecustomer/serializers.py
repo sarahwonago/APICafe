@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import (
-    Category, FoodItem, DiningTable, SpecialOffer, CartItem, Cart, Order
+    Category, FoodItem, DiningTable, SpecialOffer, CartItem, Cart, 
+    Order, Notification
     )
 
 
@@ -236,3 +237,20 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'user', 'total_price', 'is_paid', 'order_items', 'dining_table','estimated_time', 'status', 'created_at', 'updated_at']
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    """
+   Serialize for the Notifiction.
+
+    Fields:
+        id (UUIDField): Unique identifier for the notification.
+        user(User): the user to whom the notification belongs.
+        message(TextField): the body of the notification
+        created_at (DateTimeField): Timestamp when the cartitem was created.
+       
+    """
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'user', 'message', 'created_at']

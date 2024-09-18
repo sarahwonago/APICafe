@@ -23,3 +23,4 @@ This is the backend API for the Cafeteria Management System, built with Django a
 
 Todo:
 -Handle sending the orderitems when the order is created successfully.(Modify the OrderSerializer)
+-Fetch notifications, mark read, mark all as read

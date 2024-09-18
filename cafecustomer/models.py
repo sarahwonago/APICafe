@@ -298,6 +298,29 @@ class Order(models.Model):
         return f"Order for - {self.user.username} at: {self.dining_table}"
     
     
+class Notification(models.Model):
+    """
+    Model for storing in-app notification for users.
+
+    Attributes:
+        id (UUIDField): Unique identifier for the notification.
+        user(User): the user to whom the notification belongs.
+        message(TextField): the body of the notification
+        created_at (DateTimeField): Timestamp when the cartitem was created.
+       
+    """
+
+    class Meta:
+        verbose_name_plural = "Notifications"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, related_name="notifications", on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"Notification for {self.user.username}"
+        
 
 class Review(models.Model):
     """

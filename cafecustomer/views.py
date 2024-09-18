@@ -7,8 +7,10 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import IsCustomer
 from django.shortcuts import get_object_or_404
 
-from .models import (Cart, CartItem, Order, FoodItem, DiningTable)
-from .serializers import (CartItemSerializer, CartSerializer, OrderSerializer)
+from .models import (Cart, CartItem, Order, FoodItem, DiningTable,
+                     Notification)
+from .serializers import (CartItemSerializer, CartSerializer, OrderSerializer,
+                          NotificationSerializer)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsCustomer])
@@ -229,4 +231,103 @@ class CreateOrderAPIView(APIView):
             "order": serializer.data
         }
         return Response(response, status=status.HTTP_201_CREATED)
+
+
+class PaymentAPIView(APIView):
+    """
+    API view for handling payment after an order has been created.
+
+    The user must be authenticated.
+
+    Methods:
+        post: handle post requests for making payments.
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer] 
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handle POST requests for processing payments.
+        - The user will provide payment information.
+        - Once the payment is successful, the order will be updated, and the user will receive a notification.
+
+        Returns:
+            - A success message if payment is processed successfully.
+            - An error message if something goes wrong.
+        """
+        
+        order_id = request.data.get('order_id')
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+
+        if order.is_paid:
+            return Response(
+                {
+                "message":"The order has already been paid."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # if order is not paid for, payment processing goes here
+        # implement daraja api
+
+        # simulate payment is paid for now
+        payment_successful = True
+
+        if payment_successful:
+            order.is_paid = True
+            order.save()
+
+            # send a payment notification to the cafeadmin
+
+
+            # sends an in app notification to  the customer
+            notification = Notification.objects.create(
+                user = request.user,
+                message = f"Your payment for Order {order.id} has been processed sucessfully"
+            )
+
+            notification_serializer = NotificationSerializer(notification)
+
+            return Response(
+                {
+                    "message": "Payment processed successfully.",
+                    "order": OrderSerializer(order).data,
+                    "notification": notification_serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            {"message": "Payment failed. Please try again."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class OrderHistoryAPIView(APIView):
+    """
+    API view for fetching the order history.
+
+    The user must be authenticated.
+
+    Methods:
+        get: retrieves all past orders for the user.
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer] 
+
+    def get(self, request, *args, **kwargs):
+        """
+        Handle GET requests to retrieve all past orders for the authenticated user.
+
+        Returns:
+            - A list of the user's past orders.
+        """
+
+        orders = Order.objects.filter(user=request.user)
+
+        if orders:
+            serializer = OrderSerializer(orders, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response({"message":"You have no past orders."}, status=status.HTTP_200_OK)
 
