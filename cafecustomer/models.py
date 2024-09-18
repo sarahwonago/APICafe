@@ -121,15 +121,17 @@ class SpecialOffer(models.Model):
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, choices=OFFER_CHOICES, default="Christmas")
-    fooditems = models.ManyToManyField(
+    fooditem = models.ForeignKey(
         FoodItem,
-        related_name="specialoffers"
+        related_name="specialoffer",
+        on_delete=models.CASCADE
     )
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)  # e.g., 20.00 for 20%
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     description = models.TextField(blank=True, null=True)
 
+    @property
     def is_active(self):
         """
         Checks if the offer is currently active based on the current date.
@@ -138,7 +140,7 @@ class SpecialOffer(models.Model):
         return self.start_date <= now <= self.end_date
 
     def __str__(self):
-        return f"{self.name} - {self.discount_percentage}% Off"
+        return f"{self.name} - {self.discount_percentage}% Off for {self.fooditem.name}"
     
 
 class UserDinningTable(models.Model):
@@ -233,18 +235,31 @@ class CartItem(models.Model):
         return f"{self.quantity} x {self.fooditem.name}"
     
     @property
+    def price(self):
+        """
+        Gets the price of the fooditem dynamically, considering specialoffers.
+        """
+        price = self.fooditem.price
+
+        # checks if the fooditem has a specialoffer
+        specialoffers = SpecialOffer.objects.all()
+
+        for offer in specialoffers:
+            if offer.is_active:
+                if offer.fooditem == self.fooditem:
+                    discount = (offer.discount_percentage / 100) * price
+                    price -= discount
+                    break
+
+        return price 
+    
+    @property
     def total_price(self):
         """
         Calculates the total price of the fooditem dynamically.
         """
-        return self.fooditem.price * self.quantity
+        return self.price * self.quantity
         
-    @property
-    def price(self):
-        """
-        Gets the price of the fooditem dynamically.
-        """
-        return self.fooditem.price 
 
 class Order(models.Model):
     """
