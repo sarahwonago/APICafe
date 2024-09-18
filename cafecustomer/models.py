@@ -424,15 +424,37 @@ class Transaction(models.Model):
         return f"{self.points_earned} points awarded on {self.date.date()}"
 
 class RedemptionOption(models.Model):
-    name = models.CharField(max_length=100)
+    """
+    Defines the model for customerpoints Redemption options.
+
+    Attributes:
+        id (UUIDField): Unique identifier for transaction.
+        foodItem(foodItem): the fooditem to be redeemed.
+        amount(DecimalField): the order total 
+        points_required(PositiveIntegerField):points required to redeem this option
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    fooditem = models.ForeignKey(FoodItem, related_name="redeem", on_delete=models.CASCADE)
     points_required = models.PositiveIntegerField()
     description = models.TextField()
 
     def __str__(self):
-        return f"Redeem {self.name} for {self.points_required} points"
+        return f"Redeem {self.fooditem.name} for {self.points_required} points"
     
 
+
 class RedemptionTransaction(models.Model):
+    """
+    Defines the transaction model for redeeming customerpoints.
+
+    Attributes:
+        id (UUIDField): Unique identifier for transaction.
+        customer(User): the customer redeeming points.
+        redemption_option(RedemptionOption): the redemption option
+        date(DateTimeField): timestamp when the transaction was created
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
     redemption_option = models.ForeignKey(RedemptionOption, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)

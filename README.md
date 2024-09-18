@@ -24,3 +24,6 @@ This is the backend API for the Cafeteria Management System, built with Django a
 Todo:
 -Handle sending the orderitems when the order is created successfully.(Modify the OrderSerializer)
 -Fetch notifications, mark read, mark all as read
+- payment notifications , payment model
+- Redeem points, create redemption options endpoints, fetch redemption options.a user redeems point for a fooditem, points decreased, new order created with is_paid status marked true, send notification to both user and admin
+- admin processing paid orders update status of order, view all orders and filter by order status

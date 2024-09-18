@@ -28,5 +28,13 @@ def assign_points(order:Order):
         amount=total_price,
         points_earned=points
     )
+
+
+def redeem_points(user,value):
+    """
+    Redeems customerpoints and creates a transaction for it.
+    """ 
+
     
+
 

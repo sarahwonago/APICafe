@@ -8,7 +8,7 @@ from .permissions import IsCustomer
 from django.shortcuts import get_object_or_404
 
 from .models import (Cart, CartItem, Order, FoodItem, DiningTable,
-                     Notification, Review)
+                     Notification, Review, CustomerPoint)
 from .serializers import (CartItemSerializer, CartSerializer, OrderSerializer,
                           NotificationSerializer, ReviewSerializer)
 
@@ -390,4 +390,28 @@ class ReviewAPIView(APIView):
                 "detail":"You have made no reviews for your orders."
             }
 
+        return Response(response, status=status.HTTP_200_OK)
+    
+
+class CustomerPointAPIView(APIView):
+    """
+    API view for viewing customerpoints.
+
+    The user must be authenticated.
+
+    Methods:
+        get: gets customer points
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer] 
+
+    def get(self, request, *args, **kwargs):
+        """
+        Gets the customer's current points
+        """
+        customerpoints, created = CustomerPoint.objects.get_or_create(user=request.user)
+
+        response = {
+            "points":customerpoints.points
+        }
         return Response(response, status=status.HTTP_200_OK)
