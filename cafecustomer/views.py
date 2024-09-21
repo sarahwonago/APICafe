@@ -12,7 +12,7 @@ from .models import (Cart, CartItem, Order, FoodItem, DiningTable,
 from .serializers import (CartItemSerializer, CartSerializer, OrderSerializer,
                           NotificationSerializer, ReviewSerializer, RedemptionOptionSerializer)
 
-from .myutils import assign_points
+from .myutils import assign_points, redeem_points
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsCustomer])
@@ -401,7 +401,6 @@ class CustomerPointAPIView(APIView):
 
     Methods:
         get: gets customer points
-        post: 
     """
 
     permission_classes = [IsAuthenticated, IsCustomer] 
@@ -428,3 +427,37 @@ class CustomerPointAPIView(APIView):
                 "redemption_options":"There are no redemption options"
             }
         return Response(response, status=status.HTTP_200_OK)
+    
+    
+class CustomerRedeemPointAPIView(APIView):
+    """
+    API view for redeeming points.
+
+    The user must be authenticated.
+
+    Methods:
+        post: handles redeeming an option
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer] 
+
+    
+    def post(self, request, pk):
+        """
+        Handles POST request for redeeming an option.
+        """
+        user = request.user
+
+        redemption_option = get_object_or_404(RedemptionOption, id=pk)
+
+        redemption_transaction = redeem_points(user, redemption_option)
+
+        if redemption_transaction:
+            notification = Notification.objects.create(
+                user = user,
+                message = f"{redemption_option} on {redemption_transaction.created_at}.STATUS={redemption_transaction.status}"
+
+            )
+            return Response({"message":"Points redeemed successfully"}, status=status.HTTP_200_OK)
+
+        return Response({"message":"Sorry, insufficient points."}, status=status.HTTP_200_OK)

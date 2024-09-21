@@ -25,5 +25,6 @@ Todo:
 -Handle sending the orderitems when the order is created successfully.(Modify the OrderSerializer)
 -Fetch notifications, mark read, mark all as read
 - payment notifications , payment model
-- Redeem points, create redemption options endpoints, fetch redemption options.a user redeems point for a fooditem, points decreased, new order created with is_paid status marked true, send notification to both user and admin
+- create redemption options endpoints, fetch redemption options.a user redeems point for a fooditem, points decreased, new order created with is_paid status marked true, send notification to both user and admin
 - admin processing paid orders update status of order, view all orders and filter by order status
+- Cafe admin to view daily redemption transaction and mark them as pending, delivered.

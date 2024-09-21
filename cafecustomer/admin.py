@@ -2,7 +2,7 @@
 from django.contrib import admin
 from .models import (Category, FoodItem, DiningTable, Order, 
                      Cart, CartItem, Review, UserDinningTable, SpecialOffer, Transaction, 
-                     CustomerPoint, RedemptionOption, RedemptionTransaction)
+                     CustomerPoint, RedemptionOption, RedemptionTransaction, Notification)
 
 admin.site.register(Category)
 admin.site.register(FoodItem)
@@ -17,3 +17,4 @@ admin.site.register(SpecialOffer)
 admin.site.register(Transaction)
 admin.site.register(RedemptionOption)
 admin.site.register(RedemptionTransaction)
+admin.site.register(Notification)

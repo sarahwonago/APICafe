@@ -456,11 +456,17 @@ class RedemptionTransaction(models.Model):
         date(DateTimeField): timestamp when the redemptiontransaction was created
     """
 
+    STATUS_CHOICES = (
+        ("PENDING", "Pending"),
+        ("DELIVERED", "Delivered"),
+    )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
     redemption_option = models.ForeignKey(RedemptionOption, on_delete=models.SET_NULL, null=True)
     points_redeemed = models.PositiveIntegerField(default=0)
-    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=250, default="PENDING", choices=STATUS_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.customer.name} redeemed {self.points_redeemed} points"
+        return f"{self.customer} redeemed {self.points_redeemed} points"

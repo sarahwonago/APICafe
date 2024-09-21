@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (customer_home, AddToCartAPIView, CartItemsAPIView, CartItemUpdateAPIView,
                     CreateOrderAPIView, PaymentAPIView, OrderHistoryAPIView,
-                    ReviewAPIView, CustomerPointAPIView)
+                    ReviewAPIView, CustomerPointAPIView, CustomerRedeemPointAPIView)
 
 urlpatterns = [
     path("dashboard/", customer_home, name="customer-home"),
@@ -12,5 +12,6 @@ urlpatterns = [
     path("make-payment/", PaymentAPIView.as_view(), name="make-payment"),
     path("order-history/", OrderHistoryAPIView.as_view(), name="order-history"),
     path("review/", ReviewAPIView.as_view(), name="list-create-review"),
-    path("customer-points/", CustomerPointAPIView.as_view(), name="customer-points")
+    path("customer-points/", CustomerPointAPIView.as_view(), name="customer-points"),
+    path("redeem-points/<uuid:pk>/", CustomerRedeemPointAPIView.as_view(), name="redeem-points"),
 ]
