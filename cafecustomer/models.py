@@ -428,13 +428,14 @@ class RedemptionOption(models.Model):
     Defines the model for customerpoints Redemption options.
 
     Attributes:
-        id (UUIDField): Unique identifier for transaction.
+        id (UUIDField): Unique identifier for redemptionoption.
         foodItem(foodItem): the fooditem to be redeemed.
-        amount(DecimalField): the order total 
         points_required(PositiveIntegerField):points required to redeem this option
+        description(TextField): the redemption option brief description
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    fooditem = models.ForeignKey(FoodItem, related_name="redeem", on_delete=models.CASCADE)
+    fooditem = models.OneToOneField(FoodItem, related_name="redeem", on_delete=models.CASCADE)
     points_required = models.PositiveIntegerField()
     description = models.TextField()
 
@@ -448,16 +449,18 @@ class RedemptionTransaction(models.Model):
     Defines the transaction model for redeeming customerpoints.
 
     Attributes:
-        id (UUIDField): Unique identifier for transaction.
+        id (UUIDField): Unique identifier for redemptiontransaction.
         customer(User): the customer redeeming points.
-        redemption_option(RedemptionOption): the redemption option
-        date(DateTimeField): timestamp when the transaction was created
+        redemption_option(RedemptionOption): the redemption option.
+        points_redeemed(PositiveIntegerField): the points that have been redeemed
+        date(DateTimeField): timestamp when the redemptiontransaction was created
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
-    redemption_option = models.ForeignKey(RedemptionOption, on_delete=models.CASCADE)
+    redemption_option = models.ForeignKey(RedemptionOption, on_delete=models.SET_NULL, null=True)
+    points_redeemed = models.PositiveIntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.customer.name} redeemed {self.redemption_option.points_required} points"
+        return f"{self.customer.name} redeemed {self.points_redeemed} points"

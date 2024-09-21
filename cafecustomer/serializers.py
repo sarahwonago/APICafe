@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     Category, FoodItem, DiningTable, SpecialOffer, CartItem, Cart, 
-    Order, Notification, Review
+    Order, Notification, Review, RedemptionOption
     )
 
 
@@ -237,3 +237,19 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['id', 'user', 'order','rating','comment', 'created_at']
         read_only_fields = ['id', 'user', 'order', 'created_at']
+
+class RedemptionOptionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the RedemptioOption model.
+
+    Fields:
+        foodItem(foodItem): the fooditem to be redeemed.
+        points_required(PositiveIntegerField):points required to redeem this option
+        description(TextField): the redemption option brief description
+    """
+    fooditem = FoodItemSerializer()
+
+    class Meta:
+        model = RedemptionOption
+        fields = ['fooditem', 'points_required', 'description']
+        

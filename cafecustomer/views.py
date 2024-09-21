@@ -8,9 +8,9 @@ from .permissions import IsCustomer
 from django.shortcuts import get_object_or_404
 
 from .models import (Cart, CartItem, Order, FoodItem, DiningTable,
-                     Notification, Review, CustomerPoint)
+                     Notification, Review, CustomerPoint, RedemptionOption)
 from .serializers import (CartItemSerializer, CartSerializer, OrderSerializer,
-                          NotificationSerializer, ReviewSerializer)
+                          NotificationSerializer, ReviewSerializer, RedemptionOptionSerializer)
 
 from .myutils import assign_points
 
@@ -395,12 +395,13 @@ class ReviewAPIView(APIView):
 
 class CustomerPointAPIView(APIView):
     """
-    API view for viewing customerpoints.
+    API view for viewing customerpoints and all the available redemption options.
 
     The user must be authenticated.
 
     Methods:
         get: gets customer points
+        post: 
     """
 
     permission_classes = [IsAuthenticated, IsCustomer] 
@@ -411,7 +412,19 @@ class CustomerPointAPIView(APIView):
         """
         customerpoints, created = CustomerPoint.objects.get_or_create(user=request.user)
 
+        redemption_options = RedemptionOption.objects.all()
+
+        if redemption_options:
+            serializer = RedemptionOptionSerializer(redemption_options, many=True)
+
+            response = {
+                "points":customerpoints.points,
+                "redemption_options":serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        
         response = {
-            "points":customerpoints.points
-        }
+                "points":customerpoints.points,
+                "redemption_options":"There are no redemption options"
+            }
         return Response(response, status=status.HTTP_200_OK)
